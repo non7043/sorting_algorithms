@@ -1,83 +1,37 @@
 #include "sort.h"
-
 /**
- * insertion_array - insertion algorithm applied to an array.
- *
- * @array: array to sort with the algorithm.
- * @size: size of the array to sort.
- *
- * Return: Always void.
- */
-void insertion_array(int *array, size_t size)
-{
-	int i, j, k;
-
-	for (i = 0; i < (int)size; i++)
-	{
-		k = i;
-		for (j = k - 1; j >= 0 && array[j] >= array[k];)
-		{
-			SWAP(array[j], array[k], int);
-			j--;
-			k--;
-		}
-	}
-}
-
-/**
- * insertion_array_gap - insertion algorithm applied to an array.
- *
- * @array: array to sort with the algorithm.
- * @size: size of the array to sort.
- * @gap: size of the gap between changes.
- *
- * Return: Always void.
- */
-void insertion_array_gap(int *array, size_t size, int gap)
-{
-	int i;
-
-	if (gap > 1)
-	{
-		i = size - 1;
-		while (i - gap >= 0)
-		{
-			if (array[i] < array[i - gap])
-			{
-				SWAP(array[i], array[i - gap], int);
-			}
-			i--;
-		}
-		print_array((const int *)array, size);
-		gap = (gap - 1) / 3;
-		insertion_array_gap(array, size, gap);
-	}
-	else if (gap == 1)
-	{
-		insertion_array(array, size);
-		print_array((const int *)array, size);
-	}
-}
-
-/**
- * shell_sort - sort an array using shell algorithm.
- *
- * @array: array of integers to sort.
- * @size: size of the array to sort.
- *
- * Return: Always void.
+ * shell_sort - This algorithm uses insertion sort on a widely
+ * spread elements, first to sort them and then sorts the less widely
+ * spaced elements. This spacing is termed as interval. This interval
+ * is calculated based on Knuth's formula as − h = h * 3 + 1
+ * @array: Array of data to be sorted
+ * @size: Size of the array
  */
 void shell_sort(int *array, size_t size)
 {
-	int gap = 1;
+	size_t gap = 1, i = 0, j = 0;
+	int tmp = 0;
 
-	if (array == NULL || size < 2)
-	{
+	if (size < 2)
 		return;
-	}
-	while (gap < ((int)size - 1) / 3)
-	{
+	while (gap < size / 3)
 		gap = gap * 3 + 1;
+	while (gap > 0)
+	{
+		j = gap;
+		while (j < size)
+		{
+			tmp = array[j];
+			i = j;
+			while (i > gap - 1 && array[i - gap] >= tmp)
+			{
+				array[i] = array[i - gap];
+				i -= gap;
+			}
+			array[i] = tmp;
+			j++;
+		}
+		gap = (gap - 1) / 3;
+		print_array(array, size);
 	}
-	insertion_array_gap(array, size, gap);
 }
