@@ -1,75 +1,74 @@
 #include "sort.h"
-
+#define up 1
+#define down 0
+void bs_helper(int *array, size_t size, size_t subsize, size_t idx, int dir);
+void bs_merge(int *array, size_t size, size_t subsize, size_t idx, int dir);
+void cmpswap(int *array, size_t i, size_t j, int dir);
 /**
- * bitonic_sort - sorts an array following the Bitonic sort algorithm
- * @array: array of ints to sort
- * @size: size of the array
+ * bitonic_sort - bitonic sort on array
+ * @array: array
+ * @size: size
  */
 void bitonic_sort(int *array, size_t size)
 {
-	if (!array || size < 2)
-		return;
-
-	bitonic_recursion(array, 0, size - 1, 1, size);
+	bs_helper(array, size, size, 0, up);
 }
-
 /**
- * bitonic_recursion - recursive function for bitonic sort
- * @array: array to sort
- * @l: index of the left-most element
- * @r: index of the right-most element
- * @direction: ascending or descending
- * @size: size of the array
+ * bs_helper - bitonic sort helper
+ * @array: array
+ * @size: size of array
+ * @subsize: size of sub array
+ * @idx: start index of sub array
+ * @dir: direction (up or down)
  */
-void bitonic_recursion(int *array, int l, int r, int direction, size_t size)
+void bs_helper(int *array, size_t size, size_t subsize, size_t idx, int dir)
 {
-	int step;
+	size_t sub = subsize / 2;
 
-	if (r - l >= 1)
+	if (subsize > 1)
 	{
-		step = (r + l) / 2;
-		printf("Merging [%d/%lu] ", r - l + 1, size);
-		if (direction)
-			printf("(UP):\n");
-		else
-			printf("(DOWN):\n");
-		print_array(array + l, r - l + 1);
-		bitonic_recursion(array, l, step, 1, size);
-		bitonic_recursion(array, step + 1, r, 0, size);
-		bitonic_merge(array, l, r, direction);
-		printf("Result [%d/%lu] ", r - l + 1, size);
-		if (direction)
-			printf("(UP):\n");
-		else
-			printf("(DOWN):\n");
-		print_array(array + l, r - l + 1);
+		printf("Merging [%lu/%lu] (%s):\n",
+		       subsize, size, dir ? "UP" : "DOWN");
+		print_array(array + idx, subsize);
+		bs_helper(array, size, sub, idx, up);
+		bs_helper(array, size, sub, idx + sub, down);
+		bs_merge(array, size, subsize, idx, dir);
 	}
 }
-
 /**
- * bitonic_merge - sorts and merges a sequence in ascending or descending order
- * @array: array to sort
- * @l: index of the left-most element
- * @r: index of the right-most element
- * @direction: ascending or descending
+ * bs_merge - bs merger
+ * @array: array
+ * @size: size of array
+ * @subsize: size of sub array
+ * @idx: start index of sub array
+ * @dir: direction
  */
-void bitonic_merge(int *array, int l, int r, int direction)
+void bs_merge(int *array, size_t size, size_t subsize, size_t idx, int dir)
 {
-	int tmp, i, step = (l + r) / 2, mid = (r - l + 1) / 2;
+	size_t gap, i;
 
-	if (r - l >= 1)
+	for (gap = subsize / 2; gap > 0; gap--)
+		for (i = idx; i < subsize - gap + idx; i++)
+			cmpswap(array, i, i + gap, dir);
+	printf("Result [%lu/%lu] (%s):\n",
+	       subsize, size, dir == up ? "UP" : "DOWN");
+	print_array(array + idx, subsize);
+}
+/**
+ * cmpswap - compare and swap
+ * @array: array
+ * @i: i
+ * @j: j
+ * @dir: direction
+ */
+void cmpswap(int *array, size_t i, size_t j, int dir)
+{
+	int tmp;
+
+	if (dir == (array[i] > array[j] ? 1 : 0))
 	{
-		for (i = l; i < l + mid; i++)
-		{
-			if (direction == (array[i] > array[i + mid]))
-			{
-				tmp = array[i + mid];
-				array[i + mid] = array[i];
-				array[i] = tmp;
-			}
-		}
-		bitonic_merge(array, l, step, direction);
-		bitonic_merge(array, step + 1, r, direction);
+		tmp = array[i];
+		array[i] = array[j];
+		array[j] = tmp;
 	}
-
 }
